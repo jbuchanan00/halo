@@ -1,0 +1,7 @@
+
+
+root="."
+tmp="tmp"
+
+[build]
+cmd = "go run main.go"
