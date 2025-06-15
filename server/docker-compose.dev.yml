@@ -1,0 +1,29 @@
+services:
+  api:
+    container_name: halo
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/halo
+    ports:
+      - "8081:8080"
+    env_file: .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata_halo:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+volumes:
+  pgdata_halo:

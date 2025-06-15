@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:up": "docker compose -f docker-compose.dev.yml down --volumes --remove-orphans && docker compose -f docker-compose.dev.yml up -d --build"
+    "dev:up": "docker compose -f server/docker-compose.dev.yml down --volumes --remove-orphans && docker compose -f server/docker-compose.dev.yml up -d --build"
   },
   "keywords": [],
   "author": "",
