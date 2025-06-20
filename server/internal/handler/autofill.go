@@ -7,10 +7,12 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"slices"
 )
 
 type request struct {
-	Location string `json:"location"`
+	Location string       `json:"location"`
+	BaseLoc  app.Location `json:"baseLoc"`
 }
 
 func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
@@ -31,19 +33,40 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 
 	res := repository.GetLocationByText(a.DB, request.Location)
 
+	sortedRes := sortLocationsByDistance(&request.BaseLoc, res)
+
+	end := 5
+	if len(sortedRes) < end {
+		end = len(sortedRes)
+	}
+
+	cutRes := sortedRes[0:end]
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(cutRes)
 }
 
-func sortLocationsByDistance(starting *app.Location, locations []*app.Location) []*app.Location {
-	distCmp := func(first *app.Location, second *app.Location) *app.Location {
+func sortLocationsByDistance(baseLoc *app.Location, locations []*app.Location) []*app.Location {
+	distCmp := func(first *app.Location, second *app.Location) int {
+		da := distanceFromStart(baseLoc, first)
+		db := distanceFromStart(baseLoc, second)
 
-		return derived
+		switch {
+		case da > db:
+			return 1
+		case da < db:
+			return -1
+		default:
+			return 0
+		}
 	}
+
+	slices.SortFunc(locations, distCmp)
+
 	return locations
 }
 
-func distanceFromStart(base *app.Location, operand *app.Location) float32 {
+func distanceFromStart(base *app.Location, operand *app.Location) float64 {
 	var x1, y1 float32
 	var x2, y2 float32
 
@@ -53,7 +76,7 @@ func distanceFromStart(base *app.Location, operand *app.Location) float32 {
 	dx := float64(x2 - x1)
 	dy := float64(y2 - y1)
 
-	distance := math.Sqrt((dx * dx) + (dy * dy))
+	distance := math.Sqrt(math.Pow(dx, 2) + math.Pow(dy, 2))
 
-	return float32(distance)
+	return distance
 }
