@@ -3,14 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"halo/internal/app"
+	"halo/internal/repository"
 	"log"
+	"math"
 	"net/http"
 )
 
 type request struct {
-	Location  string  `json:"location"`
-	Longitude float32 `json:"longitude"`
-	Latitude  float32 `json:"latitude"`
+	Location string `json:"location"`
 }
 
 func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
@@ -29,5 +29,31 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
+	res := repository.GetLocationByText(a.DB, request.Location)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func sortLocationsByDistance(starting *app.Location, locations []*app.Location) []*app.Location {
+	distCmp := func(first *app.Location, second *app.Location) *app.Location {
+
+		return derived
+	}
+	return locations
+}
+
+func distanceFromStart(base *app.Location, operand *app.Location) float32 {
+	var x1, y1 float32
+	var x2, y2 float32
+
+	x1, y1 = base.Coord.Lon, base.Coord.Lat
+	x2, y2 = operand.Coord.Lon, operand.Coord.Lat
+
+	dx := float64(x2 - x1)
+	dy := float64(y2 - y1)
+
+	distance := math.Sqrt((dx * dx) + (dy * dy))
+
+	return float32(distance)
 }
