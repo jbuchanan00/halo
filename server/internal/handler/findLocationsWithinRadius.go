@@ -6,6 +6,7 @@ import (
 	"halo/internal/repository"
 	"math"
 	"net/http"
+	"strconv"
 )
 
 type rangeOfCoords struct {
@@ -18,6 +19,34 @@ type rangeOfCoords struct {
 func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Request) {
 	var ranges rangeOfCoords
 	var locations []*app.Location
+	var coords app.Coordinates
+
+	latStr := r.URL.Query().Get("lat")
+	lngStr := r.URL.Query().Get("lon")
+	radStr := r.URL.Query().Get("radius")
+
+	lat, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid latitude", http.StatusBadRequest)
+		return
+	}
+
+	lng, err := strconv.ParseFloat(lngStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid longitude", http.StatusBadRequest)
+		return
+	}
+
+	radius, err := strconv.ParseFloat(radStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid radius", http.StatusBadRequest)
+		return
+	}
+
+	coords.Lat = float32(lat)
+	coords.Lon = float32(lng)
+
+	ranges = *getRangeOfCoords(&coords, int16(radius))
 
 	locations = repository.GetLocationsWithinCoords(a.DB, ranges.minLat, ranges.maxLat, ranges.minLong, ranges.maxLong)
 	w.WriteHeader(http.StatusOK)
