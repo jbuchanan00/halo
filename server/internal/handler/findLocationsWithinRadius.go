@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"halo/internal/app"
 	"halo/internal/repository"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -17,12 +18,13 @@ type rangeOfCoords struct {
 }
 
 func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Request) {
+	log.Printf("Finding locations")
 	var ranges rangeOfCoords
 	var locations []*app.Location
 	var coords app.Coordinates
 
 	latStr := r.URL.Query().Get("lat")
-	lngStr := r.URL.Query().Get("lon")
+	lngStr := r.URL.Query().Get("lng")
 	radStr := r.URL.Query().Get("radius")
 
 	lat, err := strconv.ParseFloat(latStr, 64)
@@ -47,7 +49,7 @@ func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Reques
 	coords.Lon = float32(lng)
 
 	ranges = *getRangeOfCoords(&coords, int16(radius))
-
+	log.Printf("%v %v %v %v", ranges.maxLat, ranges.minLat, ranges.maxLong, ranges.minLong)
 	locations = repository.GetLocationsWithinCoords(a.DB, ranges.minLat, ranges.maxLat, ranges.minLong, ranges.maxLong)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(locations)
@@ -58,7 +60,7 @@ func getRangeOfCoords(origin *app.Coordinates, radius int16) *rangeOfCoords {
 
 	ranges.maxLat = convertForLat(origin.Lat, radius)
 	ranges.minLat = convertForLat(origin.Lat, -1*radius)
-	ranges.maxLong = convertForLong(origin.Lon, origin.Lat, radius)
+	ranges.maxLong = convertForLong(origin.Lon, origin.Lat, -1*radius)
 	ranges.minLong = convertForLong(origin.Lon, origin.Lat, radius)
 
 	return &ranges
