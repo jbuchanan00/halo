@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetLocationByText(db *pgxpool.Pool, loc string) []*app.Location {
+func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 	var locations []*app.Location
 
 	sqlQuery := "SELECT * FROM location WHERE LOWER(name) LIKE $1 or LOWER(state) LIKE $1"

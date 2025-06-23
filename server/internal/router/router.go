@@ -26,6 +26,9 @@ func New() http.Handler {
 	mux.HandleFunc("/autofill", func(w http.ResponseWriter, r *http.Request) {
 		handler.Autofill(app, w, r)
 	})
+	mux.HandleFunc("/withinradius", func(w http.ResponseWriter, r *http.Request) {
+		handler.FindLocationsWithinRadius(app, w, r)
+	})
 
 	return mux
 }

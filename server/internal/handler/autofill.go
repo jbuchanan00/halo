@@ -31,7 +31,7 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := repository.GetLocationByText(a.DB, request.Location)
+	res := repository.GetLocationsLikeText(a.DB, request.Location)
 
 	sortedRes := sortLocationsByDistance(&request.BaseLoc, res)
 
@@ -53,9 +53,9 @@ func sortLocationsByDistance(baseLoc *app.Location, locations []*app.Location) [
 
 		switch {
 		case da > db:
-			return 1
-		case da < db:
 			return -1
+		case da < db:
+			return 1
 		default:
 			return 0
 		}
