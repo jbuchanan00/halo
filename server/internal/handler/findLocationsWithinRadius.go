@@ -49,8 +49,8 @@ func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Reques
 	coords.Lon = float32(lng)
 
 	ranges = *getRangeOfCoords(&coords, int16(radius))
-	log.Printf("%v %v %v %v", ranges.maxLat, ranges.minLat, ranges.maxLong, ranges.minLong)
-	locations = repository.GetLocationsWithinCoords(a.DB, ranges.minLat, ranges.maxLat, ranges.minLong, ranges.maxLong)
+
+	locations = repository.GetLocationsWithinCoords(a.DB, ranges.maxLat, ranges.minLat, ranges.maxLong, ranges.minLong)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(locations)
 }
