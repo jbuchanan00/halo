@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import Input from './components/cityAutocomplete'
 import './App.css'
+
+
 
 function App() {
 
   return (
     <div>
-      <input></input>
+      <Input />
     </div>
   )
 }

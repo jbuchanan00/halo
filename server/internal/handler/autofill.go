@@ -17,7 +17,7 @@ type request struct {
 
 func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 	var request request
-
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		log.Printf("Request has malformed request body")
@@ -43,6 +43,7 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 	cutRes := sortedRes[0:end]
 
 	w.WriteHeader(http.StatusOK)
+
 	json.NewEncoder(w).Encode(cutRes)
 }
 
