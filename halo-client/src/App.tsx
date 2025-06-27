@@ -1,5 +1,4 @@
 import Input from './components/cityAutocomplete'
-import './App.css'
 
 
 

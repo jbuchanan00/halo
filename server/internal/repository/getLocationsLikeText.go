@@ -4,6 +4,8 @@ import (
 	"context"
 	"halo/internal/app"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -11,9 +13,28 @@ import (
 func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 	var locations []*app.Location
 
-	sqlQuery := "SELECT * FROM location WHERE LOWER(name) LIKE $1 or LOWER(state) LIKE $1"
+	namesUnformatted := strings.Split(loc, ",")
+	if len(namesUnformatted) > 2 {
+		log.Printf("Too many commas")
+		return locations
+	}
+	var namesFormatted []interface{}
 
-	rows, err := db.Query(context.Background(), sqlQuery, loc+"%")
+	var whereClause string
+
+	for i, name := range namesUnformatted {
+
+		name = name + "%"
+		namesFormatted = append(namesFormatted, name)
+		if i != 0 {
+			whereClause = whereClause + " or"
+		}
+		whereClause = whereClause + " LOWER(name) LIKE LOWER($" + strconv.Itoa(i+1) + ") or LOWER(state) LIKE LOWER($" + strconv.Itoa(i+1) + ")"
+	}
+
+	sqlQuery := "SELECT * FROM location WHERE" + whereClause
+	log.Printf("%s", sqlQuery)
+	rows, err := db.Query(context.Background(), sqlQuery, namesFormatted...)
 	if err != nil {
 		log.Printf("There was an error in the query %s", err)
 	}
