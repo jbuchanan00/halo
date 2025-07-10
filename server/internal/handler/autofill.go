@@ -43,6 +43,7 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 	cutRes := sortedRes[0:end]
 
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	json.NewEncoder(w).Encode(cutRes)
 }

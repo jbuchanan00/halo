@@ -26,6 +26,7 @@ export default defineConfig({
       usePolling: true
     },
     port: 5176,
-    host: true
+    host: true,
+    cors: true
   }
 })
