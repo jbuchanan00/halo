@@ -14,7 +14,6 @@ export default function CitySearch(){
     useEffect(() => {
 
         if(searchText.length > 2){
-            console.log(searchText)
             const delayDebounce = setTimeout(() => {
                 fetch('http://localhost:8081/autofill', {
                     method: "POST",
