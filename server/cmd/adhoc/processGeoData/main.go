@@ -24,6 +24,13 @@ type Location struct {
 	Coord   Coordinates `json:"coord"`
 }
 
+type NewLocation struct {
+	State     string  `json:"state"`
+	City      string  `json:"city"`
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
+}
+
 //lint:ignore U1000 this is a placeholder main function
 func main() {
 	dbpool, err := pgxpool.New(context.Background(), config.POSTGRES_URL)
@@ -32,7 +39,7 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	file, err := os.Open("./city.list.json")
+	file, err := os.Open("./cityStateToLatLong.json")
 	if err != nil {
 		log.Printf("Unable to read file")
 	}
@@ -42,33 +49,33 @@ func main() {
 		log.Printf("Unable to parse file")
 	}
 
-	var locations []Location
+	var locations []NewLocation
 
 	if err = json.Unmarshal(bytevalue, &locations); err != nil {
 		log.Printf("Unable to unmarshal file %s", err)
 	}
 
 	createTables(dbpool)
-
+	id := 0
 	for _, item := range locations {
-		insertLocation(dbpool, item)
-		log.Printf("Item: %d, %s, %v", int(item.Id), item.Name, item.Coord.Lat)
+		id++
+		insertLocation(dbpool, item, id)
 	}
 
 	log.Println("Completed")
 }
 
 func createTables(db *pgxpool.Pool) {
-	_, err := db.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS location (id INTEGER, name VARCHAR, state VARCHAR, country VARCHAR,latitude decimal, longitude decimal)")
+	_, err := db.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS location (id INTEGER, name VARCHAR, state VARCHAR, latitude decimal, longitude decimal)")
 	if err != nil {
 		log.Printf("Error creating the tables %s", err)
 	}
 }
 
-func insertLocation(db *pgxpool.Pool, item Location) {
-	_, err := db.Exec(context.Background(), "INSERT INTO location (id, name, state, country, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6)", int(item.Id), item.Name, item.State, item.Country, item.Coord.Lat, item.Coord.Lon)
+func insertLocation(db *pgxpool.Pool, item NewLocation, id int) {
+	_, err := db.Exec(context.Background(), "INSERT INTO location (id, name, state, latitude, longitude) VALUES ($1, $2, $3, $4, $5)", id, item.City, item.State, item.Latitude, item.Longitude)
 	if err != nil {
-		log.Printf("Error inserting %s", item.Name)
+		log.Printf("Error inserting %s", item.City)
 	}
 	log.Printf("Inserting")
 }

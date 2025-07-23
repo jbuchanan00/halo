@@ -23,7 +23,7 @@ services:
     volumes:
       - pgdata_halo:/var/lib/postgresql/data
     ports:
-      - "5434:5432"
+      - "5544:5432"
 
 volumes:
   pgdata_halo:
