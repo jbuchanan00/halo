@@ -12,16 +12,16 @@ func GetLocationByCoords(db *pgxpool.Pool, coords *app.Coordinates) *app.Locatio
 	location := &app.Location{}
 	sqlQuery := "SELECT * FROM location WHERE latitude between $1 and $2 and longitude between $3 and $4"
 
-	params := []float64{
+	params := []any{
 		float64(coords.Latitude - 0.001),
 		float64(coords.Latitude + 0.001),
 		float64(coords.Longitude - 0.001),
 		float64(coords.Longitude + 0.001)}
 
-	row := db.QueryRow(context.Background(), sqlQuery, params)
+	row := db.QueryRow(context.Background(), sqlQuery, params...)
 
 	if err := row.Scan(&location.Id, &location.Name, &location.State, &location.Latitude, &location.Longitude); err != nil {
-		log.Printf("Scan error for row")
+		log.Printf("Scan error for row %s", err)
 	}
 
 	return location

@@ -12,6 +12,7 @@ import (
 func ResolveCoordinates(a *app.App, w http.ResponseWriter, r *http.Request) {
 	log.Printf("Resolving Coordinates")
 	var location *app.Location
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	latStr := r.URL.Query().Get("latitude")
 	longStr := r.URL.Query().Get("longitude")
