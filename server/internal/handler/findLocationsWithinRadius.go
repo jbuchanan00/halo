@@ -45,8 +45,8 @@ func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	coords.Lat = float32(lat)
-	coords.Lon = float32(lng)
+	coords.Latitude = float32(lat)
+	coords.Longitude = float32(lng)
 
 	ranges = *getRangeOfCoords(&coords, int16(radius))
 
@@ -58,10 +58,10 @@ func FindLocationsWithinRadius(a *app.App, w http.ResponseWriter, r *http.Reques
 func getRangeOfCoords(origin *app.Coordinates, radius int16) *rangeOfCoords {
 	var ranges rangeOfCoords
 
-	ranges.maxLat = convertForLat(origin.Lat, radius)
-	ranges.minLat = convertForLat(origin.Lat, -1*radius)
-	ranges.maxLong = convertForLong(origin.Lon, origin.Lat, -1*radius)
-	ranges.minLong = convertForLong(origin.Lon, origin.Lat, radius)
+	ranges.maxLat = convertForLat(origin.Latitude, radius)
+	ranges.minLat = convertForLat(origin.Latitude, -1*radius)
+	ranges.maxLong = convertForLong(origin.Longitude, origin.Latitude, -1*radius)
+	ranges.minLong = convertForLong(origin.Longitude, origin.Latitude, radius)
 
 	return &ranges
 }

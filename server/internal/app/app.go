@@ -9,14 +9,14 @@ type App struct {
 }
 
 type Coordinates struct {
-	Lon float32 `json:"lon"`
-	Lat float32 `json:"lat"`
+	Longitude float32
+	Latitude  float32
 }
 
 type Location struct {
-	Id      float32     `json:"id"`
-	Name    string      `json:"name"`
-	State   string      `json:"state"`
-	Country string      `json:"country"`
-	Coord   Coordinates `json:"coord"`
+	Id        float32 `json:"id"`
+	Name      string  `json:"name"`
+	State     string  `json:"state"`
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
 }

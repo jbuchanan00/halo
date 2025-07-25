@@ -72,8 +72,8 @@ func distanceFromStart(base *app.Location, operand *app.Location) float64 {
 	var x1, y1 float32
 	var x2, y2 float32
 
-	x1, y1 = base.Coord.Lon, base.Coord.Lat
-	x2, y2 = operand.Coord.Lon, operand.Coord.Lat
+	x1, y1 = base.Longitude, base.Latitude
+	x2, y2 = operand.Longitude, operand.Latitude
 
 	dx := float64(x2 - x1)
 	dy := float64(y2 - y1)

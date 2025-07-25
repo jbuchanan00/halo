@@ -31,5 +31,9 @@ func New() http.Handler {
 		handler.FindLocationsWithinRadius(app, w, r)
 	})
 
+	mux.HandleFunc("/resolveCoordinates", func(w http.ResponseWriter, r *http.Request) {
+		handler.ResolveCoordinates(app, w, r)
+	})
+
 	return mux
 }
