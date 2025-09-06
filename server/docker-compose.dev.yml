@@ -11,6 +11,10 @@ services:
     env_file: .env
     depends_on:
       - db
+    networks:
+      - shared
+
+
 
   db:
     image: postgres:15
@@ -24,6 +28,13 @@ services:
       - pgdata_halo:/var/lib/postgresql/data
     ports:
       - "5544:5432"
+    networks:
+      - shared
+
+networks:
+  shared:
+    external: true
+
 
 volumes:
   pgdata_halo:
