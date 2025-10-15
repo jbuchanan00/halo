@@ -38,3 +38,7 @@ networks:
 
 volumes:
   pgdata_halo:
+
+networks:
+  shared:
+    external: true
