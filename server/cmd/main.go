@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	log.Println("Hello world")
+	
 	r := router.New()
 
 	port := ":8080"
