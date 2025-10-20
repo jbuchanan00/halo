@@ -1,4 +1,4 @@
-package main
+package processGeoData
 
 import (
 	"context"
@@ -32,8 +32,8 @@ type NewLocation struct {
 }
 
 //lint:ignore U1000 this is a placeholder main function
-func main() {
-	dbpool, err := pgxpool.New(context.Background(), config.POSTGRES_URL)
+func ProcessGeoData() {
+	dbpool, err := pgxpool.New(context.Background(), config.GetPostgresUrl())
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
 	}

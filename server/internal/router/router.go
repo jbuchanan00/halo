@@ -14,7 +14,7 @@ import (
 func New() http.Handler {
 	mux := http.NewServeMux()
 
-	pool, err := pgxpool.New(context.Background(), config.POSTGRES_URL)
+	pool, err := pgxpool.New(context.Background(), config.GetPostgresUrl())
 	if err != nil {
 		log.Printf("Couldn't connect to pool")
 		log.Panic()
@@ -33,6 +33,10 @@ func New() http.Handler {
 
 	mux.HandleFunc("/resolveCoordinates", func(w http.ResponseWriter, r *http.Request) {
 		handler.ResolveCoordinates(app, w, r)
+	})
+
+	mux.HandleFunc("/api/health_checks/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 	})
 
 	return mux

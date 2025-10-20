@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
     volumes:
       - .:/halo
     ports:
@@ -39,6 +41,3 @@ networks:
 volumes:
   pgdata_halo:
 
-networks:
-  shared:
-    external: true

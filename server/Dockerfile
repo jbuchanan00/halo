@@ -1,40 +1,36 @@
-FROM golang:1.24-alpine AS builder
-
-RUN apk add --no-cache ca-certificates tzdata git build-base
-
+# ---- builder ----
+FROM golang:1.25-bookworm AS builder
 WORKDIR /src
 
+# Cache dependencies
 COPY go.mod go.sum ./
+RUN go mod download
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
-
+# Copy source
 COPY . .
 
-ENV CGO_ENABLED=0
-ARG TARGETOS=linux
-ARG TARGETARCH=amd64
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH \
-    go build -v -trimpath -ldflags="-s -w" -o /out/app ./cmd
+# Build a static linux binary (musl-friendly) and put it in /out
+# Adjust CGO_ENABLED/GOARCH if you need a different arch
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-s -w" -o /out/halo ./cmd
 
+# ---- runtime ----
+FROM alpine:3.19 AS runtime
 
+# create non-root user and ensure home exists
+RUN adduser -D -u 1000 appuser
 
-FROM alpine:3.20
+WORKDIR /home/appuser
 
-RUN apk add --no-cache ca-certificates tzdata
-RUN adduser -D -H -u 10001 joshb
-
-WORKDIR /home/app
-
-COPY --from=builder /out/app /usr/local/bin/app
-
-USER joshb
+# copy binary, set ownership to appuser, and make sure it's executable
+COPY --from=builder --chown=appuser:appuser /out/halo ./halo
+RUN chmod +x ./halo
 
 ENV PORT=8080
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -q0- "http://127.0.0.1:${PORT}/health" >/dev/null || exit 1
+USER appuser
 
-ENTRYPOINT ["/usr/local/bin/app"]
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://127.0.0.1:8080/api/health_checks/ready || exit 1
+
+ENTRYPOINT ["./halo"]
