@@ -31,18 +31,19 @@ type NewLocation struct {
 	Longitude float32 `json:"longitude"`
 }
 
-//lint:ignore U1000 this is a placeholder main function
 func ProcessGeoData() {
 	dbpool, err := pgxpool.New(context.Background(), config.GetPostgresUrl())
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
+		return
 	}
 	defer dbpool.Close()
 
-	file, err := os.Open("./cityStateToLatLong.json")
+	file, err := os.Open(os.Getenv("GEO_DATA_PATH"))
 	if err != nil {
-		log.Printf("Unable to read file")
+		log.Printf("Unable to read file %s", err)
 	}
+	defer file.Close()
 
 	bytevalue, err := io.ReadAll(file)
 	if err != nil {
@@ -75,7 +76,7 @@ func createTables(db *pgxpool.Pool) {
 func insertLocation(db *pgxpool.Pool, item NewLocation, id int) {
 	_, err := db.Exec(context.Background(), "INSERT INTO location (id, name, state, latitude, longitude) VALUES ($1, $2, $3, $4, $5)", id, item.City, item.State, item.Latitude, item.Longitude)
 	if err != nil {
-		log.Printf("Error inserting %s", item.City)
+		log.Printf("Error inserting %s, %s", item.City, err)
 	}
 	log.Printf("Inserting")
 }

@@ -8,15 +8,11 @@ import (
 	"halo/internal/router"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-
-	log.Printf("POSTGRES_URL = %q", config.POSTGRES_URL)
-	log.Printf("Env variable = %q", os.Getenv("HALO_DB_DSN"))
 
 	query := `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = location);`
 

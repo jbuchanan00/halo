@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       - POSTGRES_URL=${POSTGRES_URL}
+      - HALO_DB_DSN=${HALO_DB_DSN}
     volumes:
       - .:/halo
     ports:
@@ -19,6 +20,7 @@ services:
 
 
   db:
+    container_name: postgres_halo
     image: postgres:15
     env_file:
       - .env
