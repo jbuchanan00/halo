@@ -14,7 +14,7 @@ import (
 
 func main() {
 
-	query := `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = location);`
+	query := `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'location');`
 
 	var exists bool
 	dbpool, err := pgxpool.New(context.Background(), config.GetPostgresUrl())

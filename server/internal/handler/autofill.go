@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"halo/internal/app"
 	"halo/internal/repository"
-	"io"
 	"log"
 	"math"
 	"net/http"
@@ -19,21 +17,8 @@ type request struct {
 
 func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 	var request request
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("Failed to read request body: %v", err)
-		http.Error(w, "Failed to read body", http.StatusBadRequest)
-		return
-	}
-	// log raw JSON
-	log.Printf("Request body JSON: %s", string(bodyBytes))
-
-	// restore r.Body for downstream reading
-	r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-
-	err = json.NewDecoder(r.Body).Decode(&request)
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		log.Printf("Request has malformed request body %s", err)
 		http.Error(w, "Body of request has an issue", http.StatusBadRequest)
