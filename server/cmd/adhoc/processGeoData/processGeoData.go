@@ -1,82 +1,105 @@
-package processGeoData
+package prcoessGeoData
 
 import (
 	"context"
 	"encoding/json"
-	config "halo/cmd/adhoc/infrastructure"
+	"fmt"
+	config "halo/internal/config"
 	"io"
 	"log"
 	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Coordinates struct {
-	Lon float32 `json:"lon"`
-	Lat float32 `json:"lat"`
+type GeoCity struct {
+	City       string  `json:"city"`
+	StateID    string  `json:"state_id,omitempty"`
+	StateName  string  `json:"state_name"`
+	Lat        float64 `json:"lat"`
+	Lng        float64 `json:"lng"`
+	Population int64   `json:"population,omitempty"`
 }
 
-type Location struct {
-	Id      float32     `json:"id"`
-	Name    string      `json:"name"`
-	State   string      `json:"state"`
-	Country string      `json:"country"`
-	Coord   Coordinates `json:"coord"`
-}
+func ProcessGeoData(filePath string) error {
+	log.Print("Opened function")
+	ctx := context.Background()
 
-type NewLocation struct {
-	State     string  `json:"state"`
-	City      string  `json:"city"`
-	Latitude  float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
-}
-
-func ProcessGeoData() {
-	dbpool, err := pgxpool.New(context.Background(), config.GetPostgresUrl())
+	dbpool, err := pgxpool.New(ctx, config.GetPostgresUrl())
 	if err != nil {
-		log.Printf("Unable to create connection pool: %v\n", err)
-		return
+		return fmt.Errorf("unable to create connection pool: %w", err)
 	}
 	defer dbpool.Close()
 
-	file, err := os.Open(os.Getenv("GEO_DATA_PATH"))
+	file, err := os.Open(filePath)
 	if err != nil {
-		log.Printf("Unable to read file %s", err)
+		return fmt.Errorf("unable to open file %s: %w", filePath, err)
 	}
 	defer file.Close()
 
 	bytevalue, err := io.ReadAll(file)
 	if err != nil {
-		log.Printf("Unable to parse file")
+		return fmt.Errorf("unable to read file %s: %w", filePath, err)
 	}
 
-	var locations []NewLocation
-
+	var locations []GeoCity
 	if err = json.Unmarshal(bytevalue, &locations); err != nil {
-		log.Printf("Unable to unmarshal file %s", err)
+		return fmt.Errorf("unable to unmarshal json file %s: %w", filePath, err)
 	}
 
-	createTables(dbpool)
-	id := 0
-	for _, item := range locations {
-		id++
-		insertLocation(dbpool, item, id)
+	if err := createTables(dbpool); err != nil {
+		return fmt.Errorf("createTables failed: %w", err)
 	}
 
-	log.Println("Completed")
+	// Begin a connection for CopyFrom
+	conn, err := dbpool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to acquire connection: %w", err)
+	}
+	defer conn.Release()
+
+	// Prepare rows to copy
+	rows := make([][]any, 0, len(locations))
+	for i, item := range locations {
+		rows = append(rows, []any{
+			i + 1,
+			item.City,
+			item.StateName,
+			item.Lat,
+			item.Lng,
+			item.Population,
+		})
+	}
+
+	// Use pgx.CopyFrom to load data efficiently
+	copyCount, err := conn.Conn().CopyFrom(
+		ctx,
+		pgx.Identifier{"location"},
+		[]string{"id", "name", "state", "latitude", "longitude", "population"},
+		pgx.CopyFromRows(rows),
+	)
+	if err != nil {
+		return fmt.Errorf("copy from failed: %w", err)
+	}
+
+	log.Printf("Inserted %d rows via COPY", copyCount)
+	return nil
 }
 
-func createTables(db *pgxpool.Pool) {
-	_, err := db.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS location (id INTEGER, name VARCHAR, state VARCHAR, latitude decimal, longitude decimal)")
+func createTables(db *pgxpool.Pool) error {
+	createSQL := `
+		CREATE TABLE IF NOT EXISTS location (
+		id INTEGER PRIMARY KEY,
+		name VARCHAR NOT NULL,
+		state VARCHAR,
+		latitude DOUBLE PRECISION,
+		longitude DOUBLE PRECISION,
+		population BIGINT
+	)`
+	_, err := db.Exec(context.Background(), createSQL)
 	if err != nil {
-		log.Printf("Error creating the tables %s", err)
+		return fmt.Errorf("error creating tables: %w", err)
 	}
-}
-
-func insertLocation(db *pgxpool.Pool, item NewLocation, id int) {
-	_, err := db.Exec(context.Background(), "INSERT INTO location (id, name, state, latitude, longitude) VALUES ($1, $2, $3, $4, $5)", id, item.City, item.State, item.Latitude, item.Longitude)
-	if err != nil {
-		log.Printf("Error inserting %s, %s", item.City, err)
-	}
-	log.Printf("Inserting")
+	return nil
 }

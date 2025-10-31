@@ -31,6 +31,9 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	res := repository.GetLocationsLikeText(a.DB, request.Location)
 
 	sortedRes := sortLocationsByDistance(&request.BaseLoc, res)
@@ -43,7 +46,6 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 	cutRes := sortedRes[0:end]
 
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	json.NewEncoder(w).Encode(cutRes)
 }

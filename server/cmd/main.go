@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	config "halo/cmd/adhoc/infrastructure"
+	config "halo/internal/config"
 	processGeoData "halo/cmd/adhoc/processGeoData"
 	"halo/internal/router"
 	"log"
@@ -26,7 +26,7 @@ func main() {
 	dbpool.QueryRow(context.Background(), query).Scan(&exists)
 
 	if !exists {
-		processGeoData.ProcessGeoData()
+		processGeoData.ProcessGeoData(config.GetPostgresUrl())
 	}
 
 	r := router.New()
