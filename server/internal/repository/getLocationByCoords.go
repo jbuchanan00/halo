@@ -10,7 +10,7 @@ import (
 
 func GetLocationByCoords(db *pgxpool.Pool, coords *app.Coordinates) *app.Location {
 	location := &app.Location{}
-	sqlQuery := "SELECT * FROM location WHERE latitude between $1 and $2 and longitude between $3 and $4"
+	sqlQuery := "SELECT * FROM location WHERE lat between $1 and $2 and lng between $3 and $4"
 
 	params := []any{
 		float64(coords.Latitude - 0.001),

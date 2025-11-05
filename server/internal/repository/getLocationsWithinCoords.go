@@ -11,7 +11,7 @@ import (
 func GetLocationsWithinCoords(db *pgxpool.Pool, maxLat float32, minLat float32, maxLong float32, minLong float32) []*app.Location {
 	var locations []*app.Location
 
-	sqlQuery := "SELECT * FROM location WHERE (latitude BETWEEN $1 and $2) and (longitude BETWEEN $3 and $4)"
+	sqlQuery := "SELECT * FROM location WHERE (lat BETWEEN $1 and $2) and (lng BETWEEN $3 and $4)"
 
 	rows, err := db.Query(context.Background(), sqlQuery, float64(minLat), float64(maxLat), float64(minLong), float64(maxLong))
 

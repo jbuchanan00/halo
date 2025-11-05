@@ -29,10 +29,10 @@ func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 		if i != 0 {
 			whereClause = whereClause + " or"
 		}
-		whereClause = whereClause + " LOWER(name) LIKE LOWER($" + strconv.Itoa(i+1) + ") or LOWER(state) LIKE LOWER($" + strconv.Itoa(i+1) + ")"
+		whereClause = whereClause + " LOWER(city) LIKE LOWER($" + strconv.Itoa(i+1) + ") or LOWER(state_name) LIKE LOWER($" + strconv.Itoa(i+1) + ")"
 	}
 
-	sqlQuery := "SELECT * FROM location WHERE" + whereClause
+	sqlQuery := "SELECT * FROM location WHERE" + whereClause + " ORDER BY ranking LIMIT 100"
 	log.Printf("%s", sqlQuery)
 	rows, err := db.Query(context.Background(), sqlQuery, namesFormatted...)
 	if err != nil {
