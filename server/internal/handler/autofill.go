@@ -5,9 +5,9 @@ import (
 	"halo/internal/app"
 	"halo/internal/repository"
 	"log"
-	"math"
+	// "math"
 	"net/http"
-	"slices"
+	// "slices"
 )
 
 type request struct {
@@ -25,9 +25,9 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(request.Location) < 3 {
+	if len(request.Location) < 2 {
 		log.Printf("Too short of location search")
-		http.Error(w, "Location had less than 3 characters", http.StatusBadRequest)
+		http.Error(w, "Location had less than 2 characters", http.StatusBadRequest)
 		return
 	}
 
@@ -36,51 +36,66 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 
 	res := repository.GetLocationsLikeText(a.DB, request.Location)
 
-	sortedRes := sortLocationsByDistance(&request.BaseLoc, res)
-
 	end := 5
-	if len(sortedRes) < end {
-		end = len(sortedRes)
+	if len(res) < end {
+		end = len(res)
 	}
 
-	cutRes := sortedRes[0:end]
+	cutRes := res[0:end]
 
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(cutRes)
 }
 
-func sortLocationsByDistance(baseLoc *app.Location, locations []*app.Location) []*app.Location {
-	distCmp := func(first *app.Location, second *app.Location) int {
-		da := distanceFromStart(baseLoc, first)
-		db := distanceFromStart(baseLoc, second)
+// func sortLocationsByRanking(locations []*app.Location) []*app.Location {
+// 	comparison := func(first *app.Location.Ranking, second *app.Location.Ranking) int {
+// 		switch{
+// 			case first > second:
+// 				return 1
+// 			case second > first:
+// 				return -1:
+// 			default:
+// 				return 0
+// 		}
+// 	}
 
-		switch {
-		case da > db:
-			return -1
-		case da < db:
-			return 1
-		default:
-			return 0
-		}
-	}
+// 	slices.SortFunc(locations, comparison)
 
-	slices.SortFunc(locations, distCmp)
+// 	return locations
+// }
 
-	return locations
-}
+// func sortLocationsByDistance(baseLoc *app.Location, locations []*app.Location) []*app.Location {
+// 	distCmp := func(first *app.Location, second *app.Location) int {
+// 		da := distanceFromStart(baseLoc, first)
+// 		db := distanceFromStart(baseLoc, second)
 
-func distanceFromStart(base *app.Location, operand *app.Location) float64 {
-	var x1, y1 float32
-	var x2, y2 float32
+// 		switch {
+// 		case da > db:
+// 			return -1
+// 		case da < db:
+// 			return 1
+// 		default:
+// 			return 0
+// 		}
+// 	}
 
-	x1, y1 = base.Longitude, base.Latitude
-	x2, y2 = operand.Longitude, operand.Latitude
+// 	slices.SortFunc(locations, distCmp)
 
-	dx := float64(x2 - x1)
-	dy := float64(y2 - y1)
+// 	return locations
+// }
 
-	distance := math.Sqrt(math.Pow(dx, 2) + math.Pow(dy, 2))
+// func distanceFromStart(base *app.Location, operand *app.Location) float64 {
+// 	var x1, y1 float32
+// 	var x2, y2 float32
 
-	return distance
-}
+// 	x1, y1 = base.Longitude, base.Latitude
+// 	x2, y2 = operand.Longitude, operand.Latitude
+
+// 	dx := float64(x2 - x1)
+// 	dy := float64(y2 - y1)
+
+// 	distance := math.Sqrt(math.Pow(dx, 2) + math.Pow(dy, 2))
+
+// 	return distance
+// }

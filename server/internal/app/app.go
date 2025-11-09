@@ -19,4 +19,5 @@ type Location struct {
 	State     string  `json:"state"`
 	Latitude  float32 `json:"latitude"`
 	Longitude float32 `json:"longitude"`
+	Ranking   byte    `json:"ranking"`
 }

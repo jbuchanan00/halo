@@ -32,8 +32,8 @@ func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 		whereClause = whereClause + " LOWER(city) LIKE LOWER($" + strconv.Itoa(i+1) + ") or LOWER(state_name) LIKE LOWER($" + strconv.Itoa(i+1) + ")"
 	}
 
-	sqlQuery := "SELECT * FROM location WHERE" + whereClause + " ORDER BY ranking LIMIT 100"
-	log.Printf("%s", sqlQuery)
+	sqlQuery := "SELECT id, city as name, state_id as state, lat as latitude, lng as longitude, ranking FROM location WHERE" + whereClause + " ORDER BY ranking LIMIT 100"
+	
 	rows, err := db.Query(context.Background(), sqlQuery, namesFormatted...)
 	if err != nil {
 		log.Printf("There was an error in the query %s", err)
@@ -42,8 +42,8 @@ func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 	for rows.Next() {
 		location := &app.Location{}
 
-		if err := rows.Scan(&location.Id, &location.Name, &location.State, &location.Latitude, &location.Longitude); err != nil {
-			log.Printf("scan error for row")
+		if err := rows.Scan(&location.Id, &location.Name, &location.State, &location.Latitude, &location.Longitude, &location.Ranking); err != nil {
+			log.Printf("scan error for row", err)
 		}
 
 		locations = append(locations, location)
