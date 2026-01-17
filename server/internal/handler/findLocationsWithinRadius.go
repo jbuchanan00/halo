@@ -63,6 +63,8 @@ func getRangeOfCoords(origin *app.Coordinates, radius int16) *rangeOfCoords {
 	ranges.maxLong = convertForLong(origin.Longitude, origin.Latitude, -1*radius)
 	ranges.minLong = convertForLong(origin.Longitude, origin.Latitude, radius)
 
+	log.Printf("Max Lat: %e, Min Lat: %e, Max Long: %e, Min Long: %e", ranges.maxLat, ranges.minLat, ranges.maxLong, ranges.minLong)
+
 	return &ranges
 }
 
