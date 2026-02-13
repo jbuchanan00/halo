@@ -35,6 +35,10 @@ func New() http.Handler {
 		handler.ResolveCoordinates(app, w, r)
 	})
 
+	mux.HandleFunc("/calculate", func(w http.ResponseWriter, r *http.Request){
+		handler.CalculateCoordinates(app, w, r)
+	})
+
 	mux.HandleFunc("/api/health_checks/ready", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
