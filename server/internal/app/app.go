@@ -21,3 +21,10 @@ type Location struct {
 	Longitude float32 `json:"longitude"`
 	Ranking   byte    `json:"ranking"`
 }
+
+type RangeOfCoords struct {
+	MaxLat  float32
+	MinLat  float32
+	MaxLong float32
+	MinLong float32
+}
