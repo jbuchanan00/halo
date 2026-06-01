@@ -8,7 +8,6 @@ RUN go mod download
 
 # Copy source
 COPY . .
-COPY /cmd/adhoc/processGeoData/cityStateToLatLong.json /cityStateToLatLong.json
 
 # Build a static linux binary (musl-friendly) and put it in /out
 # Adjust CGO_ENABLED/GOARCH if you need a different arch
@@ -25,7 +24,6 @@ WORKDIR /home/appuser
 
 # copy binary, set ownership to appuser, and make sure it's executable
 COPY --from=builder --chown=appuser:appuser /out/halo ./halo
-COPY --from=builder /cityStateToLatLong.json /app/data/cityStateToLatLong.json
 
 RUN chmod +x ./halo
 

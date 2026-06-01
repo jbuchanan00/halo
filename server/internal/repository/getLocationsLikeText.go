@@ -4,7 +4,6 @@ import (
 	"context"
 	"halo/internal/app"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,23 +17,39 @@ func GetLocationsLikeText(db *pgxpool.Pool, loc string) []*app.Location {
 		log.Printf("Too many commas")
 		return locations
 	}
-	var namesFormatted []interface{}
+
+	var formatted []any = make([]any, len(namesUnformatted))
+	i := 0
+	for range len(namesUnformatted) {
+		item := "%" + namesUnformatted[i] + "%"
+		formatted = append(formatted, item)
+	}
 
 	var whereClause string
 
-	for i, name := range namesUnformatted {
-
-		name = name + "%"
-		namesFormatted = append(namesFormatted, name)
-		if i != 0 {
-			whereClause = whereClause + " or"
-		}
-		whereClause = whereClause + " LOWER(city) LIKE LOWER($" + strconv.Itoa(i+1) + ") or LOWER(state_name) LIKE LOWER($" + strconv.Itoa(i+1) + ")"
+	whereClause = whereClause + " LOWER(city) LIKE ANY (array[$1"
+	if len(namesUnformatted) > 1 {
+		whereClause = whereClause + ", $2])"
+	} else {
+		whereClause = whereClause + "])"
+	}
+	whereClause = whereClause + " and (LOWER(state_name) LIKE ANY (array[$1"
+	if len(namesUnformatted) > 1 {
+		whereClause = whereClause + ", $2])"
+	} else {
+		whereClause = whereClause + "])"
+	}
+	whereClause = whereClause + " or LOWER(city) LIKE ANY (array[$1"
+	if len(namesUnformatted) > 1 {
+		whereClause = whereClause + ", $2]))"
+	} else {
+		whereClause = whereClause + "]))"
 	}
 
-	sqlQuery := "SELECT id, city as name, state_id as state, lat as latitude, lng as longitude, ranking FROM location WHERE" + whereClause + " ORDER BY ranking LIMIT 100"
+	sqlQuery := "SELECT DISTINCT id, city as name, state_id as state, lat as latitude, lng as longitude, ranking FROM location WHERE" + whereClause + " ORDER BY ranking LIMIT 50"
 
-	rows, err := db.Query(context.Background(), sqlQuery, namesFormatted...)
+	rows, err := db.Query(context.Background(), sqlQuery, formatted[len(namesUnformatted):]...)
+
 	if err != nil {
 		log.Printf("There was an error in the query %s", err)
 	}
