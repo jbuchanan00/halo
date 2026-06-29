@@ -25,14 +25,14 @@ func Autofill(a *app.App, w http.ResponseWriter, r *http.Request) {
 
 	res := repository.GetLocationsLikeText(a.DB, text)
 
-	end := 5
-	if len(res) < end {
-		end = len(res)
-	}
+	// end := 5
+	// if len(res) < end {
+	// 	end = len(res)
+	// }
 
-	cutRes := res[0:end]
+	//cutRes := res[0:end]
 
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(cutRes)
+	json.NewEncoder(w).Encode(res)
 }
